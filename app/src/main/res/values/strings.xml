@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">WeatherApp</string>
+    <string name="gathering_weather_data">Gathering weather data…</string>
+    <string name="oopsy">Oops! something went wrong!</string>
+    <string name="refresh">Refresh</string>
+    <string name="degrees">°</string>
+    <string name="percent">%</string>
+    <string name="feels_like">Feels like</string>
+    <string name="high">High</string>
+    <string name="low">Low</string>
+    <string name="today">Today</string>
+    <string name="now">Now</string>
+</resources>

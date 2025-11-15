@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,25 +31,21 @@ fun WeatherScreen(
             .fillMaxSize()
             .padding(innerPadding)
     ) {
-        val startDays = 1
         LazyColumn {
-
-            items(weatherData.forecast.forecastDayList.size + startDays) { itemN ->
-                if (itemN == 0) {
-                    TodayCard(weatherData.current, weatherData.forecast.forecastDayList.first())
-                } else {
-                    val foreCastDay = weatherData.forecast.forecastDayList[itemN - startDays]
-                    val day =
-                        if (itemN == startDays) {
-                            stringResource(R.string.today)
-                        } else getWeekDayByDate(foreCastDay.date, LocalContext.current)
-                            ?: foreCastDay.date
-                    DayCard(
-                        forecastDay = foreCastDay,
-                        day = day,
-                        isToday = itemN == startDays
-                    )
-                }
+            item{
+                TodayCard(weatherData.current, weatherData.forecast.forecastDayList.first())
+            }
+            itemsIndexed(weatherData.forecast.forecastDayList) { index, foreCastDay ->
+                val day =
+                    if (index == 0) {
+                        stringResource(R.string.today)
+                    } else getWeekDayByDate(foreCastDay.date, LocalContext.current)
+                        ?: foreCastDay.date
+                DayCard(
+                    forecastDay = foreCastDay,
+                    day = day,
+                    isToday = index == 0
+                )
             }
         }
     }

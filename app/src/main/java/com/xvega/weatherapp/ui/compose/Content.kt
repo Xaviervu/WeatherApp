@@ -1,7 +1,7 @@
 package com.xvega.weatherapp.ui.compose
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -49,7 +49,7 @@ fun SetAppContent(
                 }
             )
             { innerPadding ->
-                ContentScreen(apiState, innerPadding) {
+                ContentScreen(apiState, Modifier.padding(innerPadding)) {
                     viewModel.refreshData()
                 }
             }
@@ -61,26 +61,26 @@ fun SetAppContent(
 @Composable
 private fun ContentScreen(
     state: ApiState,
-    innerPadding: PaddingValues,
+    modifier: Modifier = Modifier,
     refresh: () -> Unit
 ) {
     when (state) {
         ApiState.Empty,
         ApiState.Loading -> {
             IndeterminateProgressScreen(
-                innerPadding,
+                modifier,
                 stringResource(R.string.gathering_weather_data)
             )
         }
 
         is ApiState.Success -> {
             val weatherData by remember { derivedStateOf { state.data as WeatherData } }
-            WeatherScreen(innerPadding, weatherData)
+            WeatherScreen(weatherData, modifier)
             state.data.toString()
         }
 
         is ApiState.Failure -> {
-            ErrorScreen(innerPadding, state.e.toString(), refresh)
+            ErrorScreen(state.e.toString(), modifier, refresh)
         }
     }
 }

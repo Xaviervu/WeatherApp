@@ -3,7 +3,6 @@ package com.xvega.weatherapp.ui.compose
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -20,14 +19,13 @@ import com.xvega.weatherapp.R
 
 @Composable
 fun ErrorScreen(
-    innerPadding: PaddingValues,
     text: String,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding(innerPadding)
     ) {
 
         Card(

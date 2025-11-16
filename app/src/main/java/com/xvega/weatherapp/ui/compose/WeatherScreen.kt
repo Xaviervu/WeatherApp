@@ -1,9 +1,7 @@
 package com.xvega.weatherapp.ui.compose
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -23,13 +21,12 @@ import com.xvega.weatherapp.utils.getWeekDayByDate
 
 @Composable
 fun WeatherScreen(
-    innerPadding: PaddingValues,
-    weatherData: WeatherData
+    weatherData: WeatherData,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding(innerPadding)
     ) {
         LazyColumn {
             item{
@@ -90,7 +87,6 @@ fun WeatherAppPreview() {
             }
         }
         WeatherScreen(
-            PaddingValues.Zero,
             weatherData
         )
     }

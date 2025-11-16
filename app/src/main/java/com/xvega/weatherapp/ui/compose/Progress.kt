@@ -2,7 +2,6 @@ package com.xvega.weatherapp.ui.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,11 +17,10 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun IndeterminateProgressScreen(innerPadding: PaddingValues, progressText: String = "") {
+fun IndeterminateProgressScreen(modifier: Modifier = Modifier, progressText: String = "") {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding),
+        modifier = modifier
+            .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -39,5 +37,5 @@ fun IndeterminateProgressScreen(innerPadding: PaddingValues, progressText: Strin
 @Preview
 @Composable
 fun PreviewIndeterminateProgressScreen() {
-    IndeterminateProgressScreen(PaddingValues.Zero, "Please wait")
+    IndeterminateProgressScreen(progressText = "Please wait")
 }

@@ -33,8 +33,8 @@ data class Hour(
     @SerializedName("chance_of_rain") var chanceOfRain: Int = 0,
     @SerializedName("will_it_snow") var willItSnow: Int = 0,
     @SerializedName("chance_of_snow") var chanceOfSnow: Int = 0,
-    @SerializedName("vis_km") var visKm: Int = 0,
-    @SerializedName("vis_miles") var visMiles: Int = 0,
+    @SerializedName("vis_km") var visKm: Double = 0.0,
+    @SerializedName("vis_miles") var visMiles: Double = 0.0,
     @SerializedName("gust_mph") var gustMph: Double = 0.0,
     @SerializedName("gust_kph") var gustKph: Double = 0.0,
     @SerializedName("uv") var uv: Double = 0.0

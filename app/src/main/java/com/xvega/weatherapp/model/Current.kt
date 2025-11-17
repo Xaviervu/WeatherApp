@@ -28,8 +28,8 @@ data class Current(
     @SerializedName("heatindex_f") var heatindexF: Double = 0.0,
     @SerializedName("dewpoint_c") var dewpointC: Double = 0.0,
     @SerializedName("dewpoint_f") var dewpointF: Double = 0.0,
-    @SerializedName("vis_km") var visKm: Int = 0,
-    @SerializedName("vis_miles") var visMiles: Int = 0,
+    @SerializedName("vis_km") var visKm: Double = 0.0,
+    @SerializedName("vis_miles") var visMiles: Double = 0.0,
     @SerializedName("uv") var uv: Double = 0.0,
     @SerializedName("gust_mph") var gustMph: Double = 0.0,
     @SerializedName("gust_kph") var gustKph: Double = 0.0

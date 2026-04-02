@@ -7,7 +7,7 @@ Image data is cached using local storage so it's not retreived every time from U
 
 https://api.weatherapi.com/v1/forecast.json?key=fa8b3df74d4042b9aa7135114252304&q=55.7569,37.6151&days=3
 
-A MVVM pattern was used for simplicity and reliability
+A MVI pattern was used for simplicity and reliability
 Stack:
 Coroutines, SharedFlow, StateFlow, Compose, ViewModel, Coil, Retrofit
 

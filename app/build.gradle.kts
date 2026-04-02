@@ -58,6 +58,8 @@ dependencies {
     implementation(libs.androidx.compose.material3.window.size.class1)
     implementation(libs.androidx.material3.adaptive.navigation.suite)
     implementation(libs.androidx.appcompat.resources)
+    implementation(libs.androidx.webkit)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.gson)

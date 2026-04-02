@@ -15,25 +15,51 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.xvega.weatherapp.R
 import com.xvega.weatherapp.model.ApiState
 import com.xvega.weatherapp.model.WeatherData
 import com.xvega.weatherapp.ui.theme.WeatherAppTheme
 import com.xvega.weatherapp.viewModel.MainViewModel
 
+sealed class Screen(val route: String, val title: String, val icon: @Composable () -> Unit) {
+    object Weather : Screen("weather", "Weather", { Icon(Icons.Default.WbSunny, contentDescription = "Weather") })
+    object WebView : Screen("webview", "WebView", { Icon(Icons.Default.Language, contentDescription = "WebView") })
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetAppContent(
     viewModel: MainViewModel
 ) {
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     WeatherAppTheme {
         val apiStateFlow = viewModel.weatherData.collectAsStateWithLifecycle(ApiState.Empty)
         val apiState by remember { derivedStateOf { apiStateFlow.value } }
 
-        val title = when (apiState) {
-            is ApiState.Success -> ((apiState as ApiState.Success).data as WeatherData).location.region
+        val title = when (currentRoute) {
+            Screen.Weather.route -> {
+                when (apiState) {
+                    is ApiState.Success -> ((apiState as ApiState.Success).data as WeatherData).location.region
+                    else -> stringResource(R.string.app_name)
+                }
+            }
+            Screen.WebView.route -> "Weather.com"
             else -> stringResource(R.string.app_name)
         }
+
         Surface(
             color = MaterialTheme.colorScheme.background,
             modifier = Modifier
@@ -41,16 +67,46 @@ fun SetAppContent(
         ) {
             Scaffold(
                 topBar = {
-                    CenterAlignedTopAppBar(
-                        title = {
-                            Text(title)
+                    if (currentRoute == Screen.Weather.route) {
+                        CenterAlignedTopAppBar(
+                            title = {
+                                Text(title)
+                            }
+                        )
+                    }
+                },
+                bottomBar = {
+                    NavigationBar {
+                        val items = listOf(Screen.Weather, Screen.WebView)
+                        items.forEach { screen ->
+                            NavigationBarItem(
+                                icon = screen.icon,
+                                label = { Text(screen.title) },
+                                selected = currentRoute == screen.route,
+                                onClick = {
+                                    navController.navigate(screen.route) {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            )
                         }
-                    )
+                    }
                 }
             )
             { innerPadding ->
-                ContentScreen(apiState, Modifier.padding(innerPadding)) {
-                    viewModel.refreshData()
+                NavHost(navController = navController, startDestination = Screen.Weather.route, modifier = Modifier.padding(innerPadding)) {
+                    composable(Screen.Weather.route) {
+                        ContentScreen(apiState) {
+                            viewModel.refreshData()
+                        }
+                    }
+                    composable(Screen.WebView.route) {
+                        WebViewScreen()
+                    }
                 }
             }
         }

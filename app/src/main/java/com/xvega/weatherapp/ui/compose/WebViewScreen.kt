@@ -1,8 +1,8 @@
 package com.xvega.weatherapp.ui.compose
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
@@ -17,16 +17,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,26 +46,20 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.view.NestedScrollingChild3
-import androidx.core.view.NestedScrollingChildHelper
-import androidx.core.view.ViewCompat
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebViewScreen(modifier: Modifier = Modifier) {
-//    val defaultUrl = "https://weather.com/weather/today/l/34f2aafc84cff75ae0b014754856ea5e7f8ddf618cf9735549dfb5e016c28e10"
     val defaultUrl = "https://www.roboform.com/filling-test-all-fields"
     var textValue by rememberSaveable { mutableStateOf(defaultUrl) }
     var urlToLoad by rememberSaveable { mutableStateOf(defaultUrl) }
     val isDark = isSystemInDarkTheme()
-    var isRefreshing by remember { mutableStateOf(false) }
-    val pullToRefreshState = rememberPullToRefreshState()
 
     val context = LocalContext.current
     val webView = remember {
-        NestedScrollingWebView(context).apply {
+        AppWebView(context).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
@@ -75,7 +67,6 @@ fun WebViewScreen(modifier: Modifier = Modifier) {
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
-                    isRefreshing = false
                     url?.let { 
                         if (it != textValue) {
                             textValue = it
@@ -136,25 +127,21 @@ fun WebViewScreen(modifier: Modifier = Modifier) {
                     onGo = { updateUrl() }
                 ),
                 trailingIcon = {
-                    IconButton(onClick = { updateUrl() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Go")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { updateUrl() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Go")
+                        }
+                        IconButton(onClick = { webView.reload() }) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        }
                     }
                 }
             )
         }
         
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            state = pullToRefreshState,
-            onRefresh = {
-                isRefreshing = true
-                webView.reload()
-            },
-            modifier = Modifier.fillMaxSize()
-        ) {
-            AndroidView(
-                factory = { webView },
-                update = { view ->
+        AndroidView(
+            factory = { webView },
+            update = { view ->
                     // Handle Dark Mode
                     if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
                         val forceDark = if (isDark) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
@@ -175,85 +162,16 @@ fun WebViewScreen(modifier: Modifier = Modifier) {
                     .semantics {
                         contentDescription = "Weather Web View"
                     }
-            )
-        }
+        )
     }
 }
 
-class NestedScrollingWebView @JvmOverloads constructor(
+@SuppressLint("SetJavaScriptEnabled")
+class AppWebView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = android.R.attr.webViewStyle
-) : WebView(context, attrs, defStyleAttr), NestedScrollingChild3 {
-
-    private val childHelper = NestedScrollingChildHelper(this).apply {
-        isNestedScrollingEnabled = true
-    }
-
-    override fun performClick(): Boolean {
-        return super.performClick()
-    }
-
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        val returnValue: Boolean
-
-        val eventCopy = MotionEvent.obtain(event)
-        val action = eventCopy.actionMasked
-
-        if (action == MotionEvent.ACTION_DOWN) {
-            startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL, ViewCompat.TYPE_TOUCH)
-        }
-
-        returnValue = super.onTouchEvent(event)
-
-        if (action == MotionEvent.ACTION_UP) {
-            performClick()
-        }
-
-        if (action == MotionEvent.ACTION_MOVE) {
-            // Very simple nested scroll implementation: 
-            // if we are at the top and pulling down, we let nested scroll happen.
-            if (scrollY <= 0 && event.y > 0) {
-                 // Dispatching nested scroll helps PullToRefresh know we are pulling
-                 dispatchNestedScroll(0, 0, 0, 0, null, ViewCompat.TYPE_TOUCH)
-            }
-        }
-
-        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
-            stopNestedScroll(ViewCompat.TYPE_TOUCH)
-        }
-        eventCopy.recycle()
-        return returnValue
-    }
-
-    // NestedScrollingChild3 implementation
-    override fun dispatchNestedScroll(dxConsumed: Int, dyConsumed: Int, dxUnconsumed: Int, dyUnconsumed: Int, offsetInWindow: IntArray?, type: Int, consumed: IntArray) {
-        childHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow, type, consumed)
-    }
-
-    override fun startNestedScroll(axes: Int, type: Int): Boolean = childHelper.startNestedScroll(axes, type)
-    override fun stopNestedScroll(type: Int) = childHelper.stopNestedScroll(type)
-    override fun hasNestedScrollingParent(type: Int): Boolean = childHelper.hasNestedScrollingParent(type)
-    override fun dispatchNestedScroll(dxConsumed: Int, dyConsumed: Int, dxUnconsumed: Int, dyUnconsumed: Int, offsetInWindow: IntArray?, type: Int): Boolean =
-        childHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow, type)
-    override fun dispatchNestedPreScroll(dx: Int, dy: Int, consumed: IntArray?, offsetInWindow: IntArray?, type: Int): Boolean =
-        childHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow, type)
-
-    // Legacy NestedScrollingChild
-    override fun setNestedScrollingEnabled(enabled: Boolean) { childHelper.isNestedScrollingEnabled = enabled }
-    override fun isNestedScrollingEnabled(): Boolean = childHelper.isNestedScrollingEnabled
-    override fun startNestedScroll(axes: Int): Boolean = childHelper.startNestedScroll(axes)
-    override fun stopNestedScroll() = childHelper.stopNestedScroll()
-    override fun hasNestedScrollingParent(): Boolean = childHelper.hasNestedScrollingParent()
-    override fun dispatchNestedScroll(dxConsumed: Int, dyConsumed: Int, dxUnconsumed: Int, dyUnconsumed: Int, offsetInWindow: IntArray?): Boolean =
-        childHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow)
-    override fun dispatchNestedPreScroll(dx: Int, dy: Int, consumed: IntArray?, offsetInWindow: IntArray?): Boolean =
-        childHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow)
-    override fun dispatchNestedFling(velocityX: Float, velocityY: Float, consumed: Boolean): Boolean =
-        childHelper.dispatchNestedFling(velocityX, velocityY, consumed)
-    override fun dispatchNestedPreFling(velocityX: Float, velocityY: Float): Boolean =
-        childHelper.dispatchNestedPreFling(velocityX, velocityY)
-}
+) : WebView(context, attrs, defStyleAttr)
 
 class UrlVisualTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {

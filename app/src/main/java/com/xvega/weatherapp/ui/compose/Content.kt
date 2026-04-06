@@ -98,7 +98,7 @@ fun SetAppContent(
                 }
             )
             { innerPadding ->
-                NavHost(navController = navController, startDestination = Screen.Weather.route, modifier = Modifier.padding(innerPadding)) {
+                NavHost(navController = navController, startDestination = Screen.WebView.route, modifier = Modifier.padding(innerPadding)) {
                     composable(Screen.Weather.route) {
                         ContentScreen(apiState) {
                             viewModel.refreshData()
